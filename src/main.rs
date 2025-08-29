@@ -1,8 +1,8 @@
-use clap::{Arg, Command};
+use clap::Parser;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command as ProcessCommand;
 use std::str;
 
@@ -18,15 +18,43 @@ struct ValidationResult {
     missing_pre_commit_ci_commits: HashMap<String, String>, // Commit hash -> Commit message
 }
 
+#[derive(Debug, Parser)]
+#[command(version)]
+struct Cli {
+    /// Path to the .git-blame-ignore-revs file
+    file_path: PathBuf,
+
+    /// Ensure each commit is in the history of the checked-out branch
+    #[arg(long)]
+    call_git: bool,
+
+    /// Require each commit line to have one or more comment lines above it
+    #[arg(long)]
+    strict_comments: bool,
+
+    /// Ensure the comment above each commit matches the first part of the
+    /// commit message. Requires --strict-comments and --call-git
+    #[arg(long)]
+    strict_comments_git: bool,
+
+    /// Ensure all commits authored by pre-commit-ci[bot] are present in the
+    /// file. Requires --call-git
+    #[arg(long)]
+    pre_commit_ci: bool,
+}
+
 fn validate_git_blame_ignore_revs(
-    file_path: &str,
+    file_path: &Path,
     call_git: bool,
     strict_comments: bool,
     strict_comments_git: bool,
     pre_commit_ci: bool,
 ) -> Result<ValidationResult, String> {
-    if !Path::new(file_path).exists() {
-        return Err(format!("The file '{}' does not exist.", file_path));
+    if !file_path.exists() {
+        return Err(format!(
+            "The file '{}' does not exist.",
+            file_path.to_str().unwrap()
+        ));
     }
 
     let mut valid_hashes: HashEntries = HashMap::new();
@@ -151,47 +179,13 @@ fn validate_git_blame_ignore_revs(
 }
 
 fn main() {
-    let matches = Command::new("validate_git_blame_ignore_revs")
-        .version("1.0")
-        .author("Eric John Berquist")
-        .about("Validate a .git-blame-ignore-revs file")
-        .arg(
-            Arg::new("file_path")
-                .required(true)
-                .takes_value(true)
-                .help("Path to the .git-blame-ignore-revs file"),
-        )
-        .arg(
-            Arg::new("call_git")
-                .long("call-git")
-                .takes_value(false)
-                .help("Ensure each commit is in the history of the checked-out branch"),
-        )
-        .arg(
-            Arg::new("strict_comments")
-                .long("strict-comments")
-                .takes_value(false)
-                .help("Require each commit line to have one or more comment lines above it"),
-        )
-        .arg(
-            Arg::new("strict_comments_git")
-                .long("strict-comments-git")
-                .takes_value(false)
-                .help("Ensure the comment above each commit matches the first part of the commit message. Requires --strict-comments and --call-git"),
-        )
-        .arg(
-            Arg::new("pre_commit_ci")
-                .long("pre-commit-ci")
-                .takes_value(false)
-                .help("Ensure all commits authored by pre-commit-ci[bot] are present in the file. Requires --call-git"),
-        )
-        .get_matches();
+    let cli = Cli::parse();
 
-    let file_path = matches.value_of("file_path").unwrap();
-    let call_git = matches.is_present("call_git");
-    let strict_comments = matches.is_present("strict_comments");
-    let strict_comments_git = matches.is_present("strict_comments_git");
-    let pre_commit_ci = matches.is_present("pre_commit_ci");
+    let file_path = cli.file_path;
+    let call_git = cli.call_git;
+    let strict_comments = cli.strict_comments;
+    let strict_comments_git = cli.strict_comments_git;
+    let pre_commit_ci = cli.pre_commit_ci;
 
     if strict_comments_git && !(strict_comments && call_git) {
         eprintln!("Error: --strict-comments-git requires --strict-comments and --call-git.");
@@ -204,7 +198,7 @@ fn main() {
     }
 
     match validate_git_blame_ignore_revs(
-        file_path,
+        &file_path,
         call_git,
         strict_comments,
         strict_comments_git,
