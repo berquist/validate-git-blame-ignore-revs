@@ -28,3 +28,6 @@ strict = true
 
 [tool.ruff]
 line-length = 100
+
+[tool.uv.sources]
+dulwich = { git = "https://github.com/jelmer/dulwich.git", rev = "08f3bd541925f30e6eb0c4e773ffdaa14c202069" }
