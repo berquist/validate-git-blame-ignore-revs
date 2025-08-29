@@ -1,8 +1,9 @@
+use clap::{Arg, Command};
+use regex::Regex;
 use std::collections::HashMap;
-use std::env;
 use std::fs;
 use std::path::Path;
-use std::process::Command;
+use std::process::Command as ProcessCommand;
 use std::str;
 
 type HashEntries = HashMap<usize, String>;
@@ -35,7 +36,7 @@ fn validate_git_blame_ignore_revs(
     let mut comment_diffs: HashMap<usize, (String, String)> = HashMap::new();
     let mut missing_pre_commit_ci_commits: HashMap<String, String> = HashMap::new();
 
-    let commit_hash_regex = regex::Regex::new(r"^[0-9a-f]{40}$").unwrap();
+    let commit_hash_regex = Regex::new(r"^[0-9a-f]{40}$").unwrap();
 
     let content = fs::read_to_string(file_path).map_err(|e| e.to_string())?;
     let lines: Vec<&str> = content.lines().collect();
@@ -73,7 +74,7 @@ fn validate_git_blame_ignore_revs(
 
     if call_git || strict_comments_git {
         for (line_number, commit_hash) in &valid_hashes {
-            let output = Command::new("git")
+            let output = ProcessCommand::new("git")
                 .args(&["show", "--quiet", "--pretty=format:%H %s", commit_hash])
                 .output();
 
@@ -110,7 +111,7 @@ fn validate_git_blame_ignore_revs(
     }
 
     if pre_commit_ci {
-        let output = Command::new("git")
+        let output = ProcessCommand::new("git")
             .args(&[
                 "log",
                 "--pretty=format:%H %s",
@@ -150,18 +151,47 @@ fn validate_git_blame_ignore_revs(
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let matches = Command::new("validate_git_blame_ignore_revs")
+        .version("1.0")
+        .author("Eric John Berquist")
+        .about("Validate a .git-blame-ignore-revs file")
+        .arg(
+            Arg::new("file_path")
+                .required(true)
+                .takes_value(true)
+                .help("Path to the .git-blame-ignore-revs file"),
+        )
+        .arg(
+            Arg::new("call_git")
+                .long("call-git")
+                .takes_value(false)
+                .help("Ensure each commit is in the history of the checked-out branch"),
+        )
+        .arg(
+            Arg::new("strict_comments")
+                .long("strict-comments")
+                .takes_value(false)
+                .help("Require each commit line to have one or more comment lines above it"),
+        )
+        .arg(
+            Arg::new("strict_comments_git")
+                .long("strict-comments-git")
+                .takes_value(false)
+                .help("Ensure the comment above each commit matches the first part of the commit message. Requires --strict-comments and --call-git"),
+        )
+        .arg(
+            Arg::new("pre_commit_ci")
+                .long("pre-commit-ci")
+                .takes_value(false)
+                .help("Ensure all commits authored by pre-commit-ci[bot] are present in the file. Requires --call-git"),
+        )
+        .get_matches();
 
-    if args.len() < 2 {
-        eprintln!("Usage: {} <file_path> [--call-git] [--strict-comments] [--strict-comments-git] [--pre-commit-ci]", args[0]);
-        return;
-    }
-
-    let file_path = &args[1];
-    let call_git = args.contains(&"--call-git".to_string());
-    let strict_comments = args.contains(&"--strict-comments".to_string());
-    let strict_comments_git = args.contains(&"--strict-comments-git".to_string());
-    let pre_commit_ci = args.contains(&"--pre-commit-ci".to_string());
+    let file_path = matches.value_of("file_path").unwrap();
+    let call_git = matches.is_present("call_git");
+    let strict_comments = matches.is_present("strict_comments");
+    let strict_comments_git = matches.is_present("strict_comments_git");
+    let pre_commit_ci = matches.is_present("pre_commit_ci");
 
     if strict_comments_git && !(strict_comments && call_git) {
         eprintln!("Error: --strict-comments-git requires --strict-comments and --call-git.");
