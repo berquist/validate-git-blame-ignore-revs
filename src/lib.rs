@@ -73,7 +73,7 @@ pub fn validate_git_blame_ignore_revs(
     if call_git || strict_comments_git {
         for (line_number, commit_hash) in &valid_hashes {
             let output = ProcessCommand::new("git")
-                .args(&["show", "--quiet", "--pretty=format:%H %s", commit_hash])
+                .args(["show", "--quiet", "--pretty=format:%H %s", commit_hash])
                 .output();
 
             match output {
@@ -110,7 +110,7 @@ pub fn validate_git_blame_ignore_revs(
 
     if pre_commit_ci {
         let output = ProcessCommand::new("git")
-            .args(&[
+            .args([
                 "log",
                 "--pretty=format:%H %s",
                 "--author=pre-commit-ci[bot]",
@@ -150,5 +150,149 @@ pub fn validate_git_blame_ignore_revs(
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
+    use super::*;
+    use std::path::PathBuf;
+
+    fn clone_repository(url: &str, path: &Path, rev: Option<&str>) -> Result<(), String> {
+        let path = path.to_str().unwrap();
+
+        let output = ProcessCommand::new("git")
+            .args(["clone", url, path])
+            .output()
+            .map_err(|e| format!("Failed to execute git: {}", e))?;
+
+        if !output.status.success() {
+            return Err(format!(
+                "Git clone failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ));
+        }
+
+        if let Some(rev) = rev {
+            let output = ProcessCommand::new("git")
+                .args(["-C", path, "checkout", rev])
+                .output()
+                .map_err(|e| format!("Failed to execute git: {}", e))?;
+
+            if !output.status.success() {
+                return Err(format!(
+                    "Git checkout failed: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                ));
+            }
+        }
+
+        Ok(())
+    }
+
+    fn setup_repo_cclib(temp_dir: &Path) -> PathBuf {
+        let repo_url = "https://github.com/cclib/cclib.git";
+        let repo_path = temp_dir.join("cclib");
+        let commit_hash = "4557cf6d8e3eafdf76e80daa4b5de0bdc4d8ec2c";
+
+        match clone_repository(repo_url, &repo_path, Some(commit_hash)) {
+            Ok(_) => println!("Repository cloned successfully!"),
+            Err(e) => eprintln!("Error: {}", e),
+        }
+
+        repo_path
+    }
+
+    #[test]
+    fn test_validate_git_blame_ignore_revs_basic() {
+        // Create a temporary directory for the repository
+        let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
+        let repo_loc = setup_repo_cclib(temp_dir.path());
+
+        // Call the validation function
+        let result = validate_git_blame_ignore_revs(
+            &repo_loc.join(".git-blame-ignore-revs"),
+            false, // call_git
+            false, // strict_comments
+            false, // strict_comments_git
+            false, // pre_commit_ci
+        )
+        .expect("Validation failed");
+
+        // Assert the results
+        assert!(!result.errors.is_empty());
+        assert!(result.missing_commits.is_empty());
+        assert!(result.strict_comment_errors.is_empty());
+        assert!(result.comment_diffs.is_empty());
+        assert!(result.missing_pre_commit_ci_commits.is_empty());
+
+        let expected_valid_hashes: HashMap<usize, String> = [
+            (2, "fb35435f66eeb8b4825f7022cc2ab315e5379483".to_string()),
+            (5, "37740d43064bc13445b19ff2d3c5f1154f202896".to_string()),
+            (7, "8f3fbf7d1fc060a3c8522343dd103604bd946e5d".to_string()),
+            (9, "7b2e8701dcb1a1a6c437919b185be78a35c3e2a5".to_string()),
+            (11, "e986fd9bb37ca0113707f88f6fea7f2318671cdd".to_string()),
+            (13, "04b3e4694e001e4b91457674a490b723e17af2b7".to_string()),
+            (15, "3c499da3e44e4a8ae983407c0f07c71996d202d8".to_string()),
+            (16, "06e54bd1eb663dd948973037f336d5190f4734ce".to_string()),
+            (18, "7f407d1c7383a17cbe0995fc7bd65daf964f2eb9".to_string()),
+            (20, "0ae04b8fd098645aa3d4805abba311ccb86762dc".to_string()),
+            (22, "57041a7cd327d4206d9c870b7d37acaa556596c6".to_string()),
+            (24, "8243cb2c418f4f373c3a3e48ffa0c213dd77988e".to_string()),
+            (26, "47ee1d84e2325b15c9e5508d6d48ae1f49e507b3".to_string()),
+        ]
+        .iter()
+        .cloned()
+        .collect();
+
+        assert_eq!(result.valid_hashes, expected_valid_hashes);
+    }
+
+    #[test]
+    fn test_validate_git_blame_ignore_revs_strict_comments() {
+        // Create a temporary directory for the repository
+        let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
+        let repo_loc = setup_repo_cclib(temp_dir.path());
+
+        // Call the validation function
+        let result = validate_git_blame_ignore_revs(
+            &repo_loc.join(".git-blame-ignore-revs"),
+            false, // call_git
+            true,  // strict_comments
+            false, // strict_comments_git
+            false, // pre_commit_ci
+        )
+        .expect("Validation failed");
+
+        // Assert the results
+        assert!(!result.errors.is_empty());
+        assert!(result.missing_commits.is_empty());
+        assert!(!result.strict_comment_errors.is_empty());
+        assert!(result.comment_diffs.is_empty());
+        assert!(result.missing_pre_commit_ci_commits.is_empty());
+
+        let expected_valid_hashes: HashMap<usize, String> = [
+            (2, "fb35435f66eeb8b4825f7022cc2ab315e5379483".to_string()),
+            (5, "37740d43064bc13445b19ff2d3c5f1154f202896".to_string()),
+            (7, "8f3fbf7d1fc060a3c8522343dd103604bd946e5d".to_string()),
+            (9, "7b2e8701dcb1a1a6c437919b185be78a35c3e2a5".to_string()),
+            (11, "e986fd9bb37ca0113707f88f6fea7f2318671cdd".to_string()),
+            (13, "04b3e4694e001e4b91457674a490b723e17af2b7".to_string()),
+            (15, "3c499da3e44e4a8ae983407c0f07c71996d202d8".to_string()),
+            (16, "06e54bd1eb663dd948973037f336d5190f4734ce".to_string()),
+            (18, "7f407d1c7383a17cbe0995fc7bd65daf964f2eb9".to_string()),
+            (20, "0ae04b8fd098645aa3d4805abba311ccb86762dc".to_string()),
+            (22, "57041a7cd327d4206d9c870b7d37acaa556596c6".to_string()),
+            (24, "8243cb2c418f4f373c3a3e48ffa0c213dd77988e".to_string()),
+            (26, "47ee1d84e2325b15c9e5508d6d48ae1f49e507b3".to_string()),
+        ]
+        .iter()
+        .cloned()
+        .collect();
+
+        assert_eq!(result.valid_hashes, expected_valid_hashes);
+
+        let expected_strict_comment_errors: HashMap<usize, String> =
+            [(16, "06e54bd1eb663dd948973037f336d5190f4734ce".to_string())]
+                .iter()
+                .cloned()
+                .collect();
+
+        assert_eq!(result.strict_comment_errors, expected_strict_comment_errors);
+    }
 }
