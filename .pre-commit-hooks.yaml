@@ -1,0 +1,6 @@
+---
+- id: validate-git-blame-ignore-revs
+  name: validate-git-blame-ignore-revs
+  entry: validate-git-blame-ignore-revs
+  language: python
+  files: '.git-blame-ignore-revs'
