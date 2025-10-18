@@ -4,3 +4,9 @@
   entry: validate-git-blame-ignore-revs
   language: python
   files: '.git-blame-ignore-revs'
+  verbose: true
+  args:
+    - --call-git
+    - --strict-comments
+    - --strict-comments-git
+    - --pre-commit-ci
