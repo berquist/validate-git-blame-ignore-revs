@@ -8,4 +8,4 @@ sync:
 
 # Run all pre-commit checks on all files
 pre:
-    pre-commit run -a
+    prek run -a
