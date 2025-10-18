@@ -3,7 +3,7 @@
   name: validate-git-blame-ignore-revs
   entry: validate-git-blame-ignore-revs
   language: python
-  files: '.git-blame-ignore-revs'
+  files: '^\.git-blame-ignore-revs$'
   verbose: true
   args:
     - --call-git
