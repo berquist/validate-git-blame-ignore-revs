@@ -1,7 +1,18 @@
 import argparse
+from enum import Enum
 from pathlib import Path
+from sys import exit
 
 from validate_git_blame_ignore_revs.lib import validate_git_blame_ignore_revs
+
+
+class ErrorCode(Enum):
+    FileNotFound = 0b1
+    SyntaxProblem = 0b10
+    CommitsNotPresent = 0b100
+    MissingComments = 0b1000
+    MissingCommitMessageComments = 0b10000
+    MissingPreCommitCICommits = 0b100000
 
 
 def main() -> None:
@@ -30,6 +41,8 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    retval = 0
+
     if args.strict_comments_git and not (args.strict_comments and args.call_git):
         parser.error("--strict-comments-git requires --strict-comments and --call-git.")
     if args.pre_commit_ci and not args.call_git:
@@ -53,6 +66,7 @@ def main() -> None:
             print(f"\nErrors ({len(result['errors'])}):")
             for line_number, line in result["errors"].items():
                 print(f"  Line {line_number}: {line}")
+            retval += ErrorCode.SyntaxProblem.value
         else:
             print("\nNo errors found!")
 
@@ -61,6 +75,7 @@ def main() -> None:
                 print(f"\nMissing commits ({len(result['missing_commits'])}):")
                 for line_number, commit in result["missing_commits"].items():
                     print(f"  Line {line_number}: {commit}")
+                retval += ErrorCode.CommitsNotPresent.value
             else:
                 print("\nAll commits are present in the Git history!")
 
@@ -69,6 +84,7 @@ def main() -> None:
                 print(f"\nStrict comment errors ({len(result['strict_comment_errors'])}):")
                 for line_number, line in result["strict_comment_errors"].items():
                     print(f"  Line {line_number}: {line}")
+                retval += ErrorCode.MissingComments.value
             else:
                 print("\nAll commit lines have comments above them!")
 
@@ -79,6 +95,7 @@ def main() -> None:
                     print(f"  Line {line_number}:")
                     print(f"    Comment: {comment}")
                     print(f"    Commit message: {commit_message}")
+                retval += ErrorCode.MissingCommitMessageComments.value
             else:
                 print("\nAll comments match the corresponding commit messages!")
 
@@ -89,10 +106,14 @@ def main() -> None:
                 )
                 for commit_hash, commit_message in result["missing_pre_commit_ci_commits"].items():
                     print(f"  Commit {commit_hash}: {commit_message}")
+                retval += ErrorCode.MissingPreCommitCICommits.value
             else:
                 print("\nAll pre-commit-ci commits are present in the file!")
     except FileNotFoundError as e:
         print(e)
+        retval += ErrorCode.FileNotFound.value
+
+    exit(retval)
 
 
 if __name__ == "__main__":
