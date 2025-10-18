@@ -17,23 +17,23 @@ class ErrorCode(Enum):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate a .git-blame-ignore-revs file.")
-    parser.add_argument("file_path", type=Path, help="Path to the .git-blame-ignore-revs file.")
-    parser.add_argument(
+    _ = parser.add_argument("file_path", type=Path, help="Path to the .git-blame-ignore-revs file.")
+    _ = parser.add_argument(
         "--call-git",
         action="store_true",
         help="Ensure each commit is in the history of the checked-out branch.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--strict-comments",
         action="store_true",
         help="Require each commit line to have one or more comment lines above it.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--strict-comments-git",
         action="store_true",
         help="Ensure the comment above each commit matches the first part of the commit message. Requires --strict-comments and --call-git.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--pre-commit-ci",
         action="store_true",
         help="Ensure all commits authored by pre-commit-ci[bot] are present in the file. Requires --call-git.",
