@@ -15,9 +15,11 @@ permissions: {}
 jobs:
   prechecks:
     uses: ./.github/workflows/pre-commit.yml
+  separate-zizmor:
+    uses: ./.github/workflows/zizmor.yml
   all:
-    name: CI success
-    needs: [prechecks]
+    name: CI precheck success
+    needs: [prechecks, separate-zizmor]
     runs-on: ubuntu-24.04
     steps:
       - name: Success

@@ -1,0 +1,38 @@
+---
+# derived from https://woodruffw.github.io/zizmor/usage/#use-in-github-actions
+name: GitHub Actions Security Analysis with zizmor 🌈
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_call:
+
+concurrency:
+  group: zizmor-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: zizmor latest via PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write  # required for GitHub to present SARIF results
+      contents: read  # required for workflows in private repositories
+      actions: read  # required for reading workflow definition files
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6
+        with:
+          persist-credentials: false
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867  # v7
+      - name: Run zizmor 🌈
+        run: uvx zizmor --format sarif . > results.sarif
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@1b168cd39490f61582a9beae412bb7057a6b2c4e  # v4
+        with:
+          sarif_file: results.sarif
+          category: zizmor
