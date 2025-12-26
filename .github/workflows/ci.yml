@@ -1,0 +1,30 @@
+---
+name: ci
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  prechecks:
+    uses: ./.github/workflows/pre-commit.yml
+  separate-zizmor:
+    uses: ./.github/workflows/zizmor.yml
+    permissions:
+      security-events: write  # required for GitHub to present SARIF results
+      contents: read  # required for workflows in private repositories
+      actions: read  # required for reading workflow definition files
+  all:
+    name: CI precheck success
+    needs: [prechecks, separate-zizmor]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Success
+        run: "true"
