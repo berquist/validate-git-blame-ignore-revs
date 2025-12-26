@@ -11,7 +11,7 @@ In the meantime, it is available in [VCS format](https://pip.pypa.io/en/stable/t
 For example, to use with [uv](https://docs.astral.sh/uv/guides/tools/#requesting-specific-versions):
 
 ```bash
-uvx git+https://github.com/berquist/validate-git-blame-ignore-revs@v0.1 --help
+uvx git+https://github.com/berquist/validate-git-blame-ignore-revs@v0.1.0 --help
 ```
 
 ## Recommended usage
@@ -58,7 +58,7 @@ Add the following to your `.pre-commit-config.yaml` under the `repos` list:
 
 ```yaml
   - repo: https://github.com/berquist/validate-git-blame-ignore-revs
-    rev: v0.1
+    rev: v0.1.0
     hooks:
       - id: validate-git-blame-ignore-revs
 
@@ -75,7 +75,7 @@ For example, to only check the syntax of the file and that each commit is presen
 
 ```yaml
   - repo: https://github.com/berquist/validate-git-blame-ignore-revs
-    rev: v0.1
+    rev: v0.1.0
     hooks:
       - id: validate-git-blame-ignore-revs
         args: [--call-git]
@@ -89,7 +89,7 @@ For example, if your file has the idiomatic name but is located in a `dev` subdi
 
 ```yaml
   - repo: https://github.com/berquist/validate-git-blame-ignore-revs
-    rev: v0.1
+    rev: v0.1.0
     hooks:
       - id: validate-git-blame-ignore-revs
         files: '^dev/\.git-blame-ignore-revs$'
