@@ -1,7 +1,7 @@
 [project]
 name = "validate-git-blame-ignore-revs"
 dynamic = ["version"]
-description = "Add your description here"
+description = "Ensure a .git-blame-ignore-revs file is correct"
 readme = "README.md"
 authors = [
     { name = "Eric Berquist", email = "eric.berquist@gmail.com" }
