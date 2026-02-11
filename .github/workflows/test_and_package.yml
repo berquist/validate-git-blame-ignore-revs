@@ -40,11 +40,12 @@ jobs:
           # so versioningit can figure out the version
           fetch-depth: 0
           fetch-tags: true
-      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install just command runner
         uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
+      - name: Install uv
+        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Run tests
         run: just test
         # - name: Build documentation
