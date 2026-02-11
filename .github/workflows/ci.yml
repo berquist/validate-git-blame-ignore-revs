@@ -31,6 +31,8 @@ jobs:
   unit-tests:
     needs: [all-prechecks]
     uses: ./.github/workflows/test_and_package.yml
+    permissions:
+      contents: write  # needed for github-pages-deploy-action
   # publish:
   #   needs: [unit-tests]
   #   uses: ./.github/workflows/publish.yml
