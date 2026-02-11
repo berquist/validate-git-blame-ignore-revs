@@ -42,8 +42,8 @@ jobs:
           fetch-tags: true
       - name: Install system-level dependencies
         run: |
-          apt-get -y update
-          apt-get -y install libgit2-dev
+          sudo apt-get -y update
+          sudo apt-get -y install libgit2-dev
       - name: Install just command runner
         uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
       - name: Install uv
