@@ -11,7 +11,9 @@ def repo_cclib(tmp_path_factory: pytest.TempPathFactory) -> pygit2.Repository:
         url="https://github.com/cclib/cclib.git",
         path=str(tmp_path_factory.mktemp(basename="cclib")),
     )
-    repo.reset("4557cf6d8e3eafdf76e80daa4b5de0bdc4d8ec2c", pygit2.enums.ResetMode.HARD)
+    oid = pygit2.Oid(hex="4557cf6d8e3eafdf76e80daa4b5de0bdc4d8ec2c")
+    repo.checkout_tree(treeish=repo[oid])
+    repo.set_head(target=oid)
     return repo
 
 
