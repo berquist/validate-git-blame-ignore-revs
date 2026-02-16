@@ -40,13 +40,13 @@ pub struct Opts {
     pub pre_commit_ci: bool,
 }
 
-pub fn validate_git_blame_ignore_revs(
-    file_path: &Path,
-    call_git: bool,
-    strict_comments: bool,
-    strict_comments_git: bool,
-    pre_commit_ci: bool,
-) -> Result<ValidationResult, String> {
+pub fn validate_git_blame_ignore_revs(opts: &Opts) -> Result<ValidationResult, String> {
+    let file_path = &opts.file_path;
+    let call_git = opts.call_git;
+    let strict_comments = opts.strict_comments;
+    let strict_comments_git = opts.strict_comments_git;
+    let pre_commit_ci = opts.pre_commit_ci;
+
     if !file_path.exists() {
         return Err(format!(
             "The file '{}' does not exist.",
@@ -230,14 +230,14 @@ mod tests {
         let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
         let repo_loc = setup_repo_cclib(temp_dir.path());
 
-        let result = validate_git_blame_ignore_revs(
-            &repo_loc.join(".git-blame-ignore-revs"),
-            false, // call_git
-            false, // strict_comments
-            false, // strict_comments_git
-            false, // pre_commit_ci
-        )
-        .expect("Validation failed");
+        let opts = Opts {
+            file_path: repo_loc.join(".git-blame-ignore-revs"),
+            call_git: false,
+            strict_comments: false,
+            strict_comments_git: false,
+            pre_commit_ci: false,
+        };
+        let result = validate_git_blame_ignore_revs(&opts).expect("Validation failed");
 
         assert!(result.errors.is_empty());
         assert!(result.missing_commits.is_empty());
@@ -272,14 +272,14 @@ mod tests {
         let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
         let repo_loc = setup_repo_cclib(temp_dir.path());
 
-        let result = validate_git_blame_ignore_revs(
-            &repo_loc.join(".git-blame-ignore-revs"),
-            false, // call_git
-            true,  // strict_comments
-            false, // strict_comments_git
-            false, // pre_commit_ci
-        )
-        .expect("Validation failed");
+        let opts = Opts {
+            file_path: repo_loc.join(".git-blame-ignore-revs"),
+            call_git: false,
+            strict_comments: true,
+            strict_comments_git: false,
+            pre_commit_ci: false,
+        };
+        let result = validate_git_blame_ignore_revs(&opts).expect("Validation failed");
 
         assert!(result.errors.is_empty());
         assert!(result.missing_commits.is_empty());

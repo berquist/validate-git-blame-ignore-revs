@@ -4,7 +4,6 @@ use validate_git_blame_ignore_revs::{validate_git_blame_ignore_revs, Opts};
 fn main() {
     let cli = Opts::parse();
 
-    let file_path = cli.file_path;
     let call_git = cli.call_git;
     let strict_comments = cli.strict_comments;
     let strict_comments_git = cli.strict_comments_git;
@@ -20,13 +19,7 @@ fn main() {
         return;
     }
 
-    match validate_git_blame_ignore_revs(
-        &file_path,
-        call_git,
-        strict_comments,
-        strict_comments_git,
-        pre_commit_ci,
-    ) {
+    match validate_git_blame_ignore_revs(&cli) {
         Ok(result) => {
             println!("Validation Results:");
             println!("Valid hashes ({}):", result.valid_hashes.len());
