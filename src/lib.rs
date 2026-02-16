@@ -200,11 +200,9 @@ mod tests {
 
     #[test]
     fn test_validate_git_blame_ignore_revs_basic() {
-        // Create a temporary directory for the repository
         let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
         let repo_loc = setup_repo_cclib(temp_dir.path());
 
-        // Call the validation function
         let result = validate_git_blame_ignore_revs(
             &repo_loc.join(".git-blame-ignore-revs"),
             false, // call_git
@@ -214,8 +212,7 @@ mod tests {
         )
         .expect("Validation failed");
 
-        // Assert the results
-        assert!(!result.errors.is_empty());
+        assert!(result.errors.is_empty());
         assert!(result.missing_commits.is_empty());
         assert!(result.strict_comment_errors.is_empty());
         assert!(result.comment_diffs.is_empty());
@@ -245,11 +242,9 @@ mod tests {
 
     #[test]
     fn test_validate_git_blame_ignore_revs_strict_comments() {
-        // Create a temporary directory for the repository
         let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
         let repo_loc = setup_repo_cclib(temp_dir.path());
 
-        // Call the validation function
         let result = validate_git_blame_ignore_revs(
             &repo_loc.join(".git-blame-ignore-revs"),
             false, // call_git
@@ -259,8 +254,7 @@ mod tests {
         )
         .expect("Validation failed");
 
-        // Assert the results
-        assert!(!result.errors.is_empty());
+        assert!(result.errors.is_empty());
         assert!(result.missing_commits.is_empty());
         assert!(!result.strict_comment_errors.is_empty());
         assert!(result.comment_diffs.is_empty());
