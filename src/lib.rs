@@ -134,34 +134,36 @@ pub fn validate_git_blame_ignore_revs(opts: &Opts) -> Result<ValidationResult, S
                 }
             }
         }
-    }
 
-    if pre_commit_ci {
-        let output = ProcessCommand::new("git")
-            .args([
-                "log",
-                "--pretty=format:%H %s",
-                "--author=pre-commit-ci[bot]",
-            ])
-            .output();
+        if pre_commit_ci {
+            let output = ProcessCommand::new("git")
+                .args([
+                    "log",
+                    "--pretty=format:%H %s",
+                    "--author=pre-commit-ci[bot]",
+                ])
+                .output();
 
-        match output {
-            Ok(result) => {
-                let pre_commit_ci_commits = str::from_utf8(&result.stdout).unwrap_or("").trim();
-                for commit_entry in pre_commit_ci_commits.lines() {
-                    let parts: Vec<&str> = commit_entry.splitn(2, ' ').collect();
-                    if parts.len() == 2 {
-                        let commit_hash = parts[0];
-                        let commit_message = parts[1];
-                        if !valid_hashes.values().any(|hash| hash == commit_hash) {
-                            missing_pre_commit_ci_commits
-                                .insert(commit_hash.to_string(), commit_message.to_string());
+            match output {
+                Ok(result) => {
+                    let pre_commit_ci_commits = str::from_utf8(&result.stdout).unwrap_or("").trim();
+                    for commit_entry in pre_commit_ci_commits.lines() {
+                        let parts: Vec<&str> = commit_entry.splitn(2, ' ').collect();
+                        if parts.len() == 2 {
+                            let commit_hash = parts[0];
+                            let commit_message = parts[1];
+                            if !valid_hashes.values().any(|hash| hash == commit_hash) {
+                                missing_pre_commit_ci_commits
+                                    .insert(commit_hash.to_string(), commit_message.to_string());
+                            }
                         }
                     }
                 }
-            }
-            Err(_) => {
-                return Err("Failed to fetch commits authored by pre-commit-ci[bot].".to_string());
+                Err(_) => {
+                    return Err(
+                        "Failed to fetch commits authored by pre-commit-ci[bot].".to_string()
+                    );
+                }
             }
         }
     }
