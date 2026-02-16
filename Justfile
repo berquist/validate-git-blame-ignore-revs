@@ -1,6 +1,9 @@
 # Run all project tests
 test:
-    uv run --project {{justfile_directory()}} python -m pytest
+    uv run --project {{justfile_directory()}} python -m pytest --cov
+
+run:
+    uv run --project {{justfile_directory()}} validate-git-blame-ignore-revs --help
 
 # Update all project dependencies
 sync:
