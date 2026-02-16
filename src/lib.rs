@@ -40,7 +40,10 @@ pub struct Opts {
 }
 
 pub fn validate_git_blame_ignore_revs(opts: &Opts) -> Result<ValidationResult, String> {
-    let file_path = &opts.file_path;
+    let file_path = &opts
+        .file_path
+        .canonicalize()
+        .expect("Couldn't resolve absolute file path");
     let call_git = opts.call_git;
     let strict_comments = opts.strict_comments;
     let strict_comments_git = opts.strict_comments_git;
