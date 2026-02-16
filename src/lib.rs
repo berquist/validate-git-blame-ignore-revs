@@ -1,4 +1,6 @@
+use clap::Parser;
 use regex::Regex;
+use std::path::PathBuf;
 use std::{collections::HashMap, fs, path::Path, process::Command as ProcessCommand};
 
 type HashEntries = HashMap<usize, String>;
@@ -11,6 +13,31 @@ pub struct ValidationResult {
     pub strict_comment_errors: HashEntries,
     pub comment_diffs: HashMap<usize, (String, String)>, // Line number -> (comment, commit message)
     pub missing_pre_commit_ci_commits: HashMap<String, String>, // Commit hash -> Commit message
+}
+
+#[derive(Debug, Parser)]
+#[command(version, about)]
+pub struct Opts {
+    /// Path to the .git-blame-ignore-revs file
+    pub file_path: PathBuf,
+
+    /// Ensure each commit is in the history of the checked-out branch
+    #[arg(long)]
+    pub call_git: bool,
+
+    /// Require each commit line to have one or more comment lines above it
+    #[arg(long)]
+    pub strict_comments: bool,
+
+    /// Ensure the comment above each commit matches the first part of the
+    /// commit message. Requires --strict-comments and --call-git
+    #[arg(long)]
+    pub strict_comments_git: bool,
+
+    /// Ensure all commits authored by pre-commit-ci[bot] are present in the
+    /// file. Requires --call-git
+    #[arg(long)]
+    pub pre_commit_ci: bool,
 }
 
 pub fn validate_git_blame_ignore_revs(

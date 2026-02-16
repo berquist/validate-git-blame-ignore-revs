@@ -1,35 +1,8 @@
 use clap::Parser;
-use std::path::PathBuf;
-
-use validate_git_blame_ignore_revs::validate_git_blame_ignore_revs;
-
-#[derive(Debug, Parser)]
-#[command(version, about)]
-struct Cli {
-    /// Path to the .git-blame-ignore-revs file
-    file_path: PathBuf,
-
-    /// Ensure each commit is in the history of the checked-out branch
-    #[arg(long)]
-    call_git: bool,
-
-    /// Require each commit line to have one or more comment lines above it
-    #[arg(long)]
-    strict_comments: bool,
-
-    /// Ensure the comment above each commit matches the first part of the
-    /// commit message. Requires --strict-comments and --call-git
-    #[arg(long)]
-    strict_comments_git: bool,
-
-    /// Ensure all commits authored by pre-commit-ci[bot] are present in the
-    /// file. Requires --call-git
-    #[arg(long)]
-    pre_commit_ci: bool,
-}
+use validate_git_blame_ignore_revs::{validate_git_blame_ignore_revs, Opts};
 
 fn main() {
-    let cli = Cli::parse();
+    let cli = Opts::parse();
 
     let file_path = cli.file_path;
     let call_git = cli.call_git;
