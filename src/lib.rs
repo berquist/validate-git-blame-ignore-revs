@@ -1,7 +1,6 @@
 use clap::Parser;
 use regex::Regex;
-use std::path::PathBuf;
-use std::{collections::HashMap, fs, path::Path, process::Command as ProcessCommand};
+use std::{collections::HashMap, env, fs, path::PathBuf, process::Command as ProcessCommand};
 
 type HashEntries = HashMap<usize, String>;
 
@@ -98,6 +97,8 @@ pub fn validate_git_blame_ignore_revs(opts: &Opts) -> Result<ValidationResult, S
     }
 
     if call_git || strict_comments_git {
+        env::set_current_dir(file_path.parent().unwrap()).unwrap();
+
         for (line_number, commit_hash) in &valid_hashes {
             let output = ProcessCommand::new("git")
                 .args(["show", "--quiet", "--pretty=format:%H %s", commit_hash])
@@ -178,7 +179,7 @@ pub fn validate_git_blame_ignore_revs(opts: &Opts) -> Result<ValidationResult, S
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
+    use std::path::Path;
 
     fn clone_repository(url: &str, path: &Path, rev: Option<&str>) -> Result<(), String> {
         let path = path.to_str().unwrap();
