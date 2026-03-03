@@ -1,7 +1,7 @@
 [project]
 name = "validate-git-blame-ignore-revs"
-version = "0.1.0"
-description = "Add your description here"
+dynamic = ["version"]
+description = "Ensure a .git-blame-ignore-revs file is correct"
 readme = "README.md"
 authors = [
     { name = "Eric Berquist", email = "eric.berquist@gmail.com" }
@@ -13,8 +13,8 @@ dependencies = []
 validate-git-blame-ignore-revs = "validate_git_blame_ignore_revs.__main__:main"
 
 [build-system]
-requires = ["uv_build>=0.10.0,<0.11.0"]
-build-backend = "uv_build"
+requires = ["setuptools>=61.0", "versioningit>=3.1"]
+build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
@@ -29,5 +29,18 @@ strict = true
 [tool.ruff]
 line-length = 100
 
-[tool.uv.sources]
-dulwich = { git = "https://github.com/jelmer/dulwich.git", rev = "08f3bd541925f30e6eb0c4e773ffdaa14c202069" }
+[tool.setuptools]
+zip-safe = false
+
+[tool.versioningit.format]
+method = {module = "versioningit_override", value = "versioningit_format", module-dir = "tools"}
+
+[tool.versioningit.template-fields.version-tuple]
+pep440 = true
+
+[tool.versioningit.vcs]
+method = "git"
+match = ["v*"]
+
+[tool.versioningit.write]
+file = "src/validate_git_blame_ignore_revs/_version.py"
