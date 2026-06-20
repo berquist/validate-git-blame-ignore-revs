@@ -22,6 +22,8 @@ jobs:
   run-tests:
     name: Test and package on ${{ matrix.python-version }}
     runs-on: ubuntu-24.04
+    container:
+      image: docker.io/archlinux/archlinux:base-devel@sha256:8936df72701d320ff1d7d34e2a4e1df8dc9e137dea07126bf7a8135b2f971b35
     strategy:
       matrix:
         python-version:
@@ -42,8 +44,8 @@ jobs:
           fetch-tags: true
       - name: Install system-level dependencies
         run: |
-          sudo apt-get -y update
-          sudo apt-get -y install libgit2-dev
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm libgit2
       - name: Install just command runner
         uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
       - name: Install uv
