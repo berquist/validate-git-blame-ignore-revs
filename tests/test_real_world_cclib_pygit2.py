@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pygit2
 import pytest
-from validate_git_blame_ignore_revs.lib import validate_git_blame_ignore_revs
+from validate_git_blame_ignore_revs import validate_git_blame_ignore_revs
 
 
 @pytest.fixture(scope="session")
