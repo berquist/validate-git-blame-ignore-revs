@@ -11,7 +11,9 @@ def repo_sst_core(tmp_path_factory: pytest.TempPathFactory) -> pygit2.Repository
         url="https://github.com/sstsimulator/sst-core.git",
         path=str(tmp_path_factory.mktemp(basename="sst-core")),
     )
-    repo.reset("17224c90014c96a245146569a27b86fb2c6d1e6b", pygit2.enums.ResetMode.HARD)
+    oid = pygit2.Oid(hex="17224c90014c96a245146569a27b86fb2c6d1e6b")
+    repo.checkout_tree(treeish=repo[oid])
+    repo.set_head(target=oid)
     return repo
 
 

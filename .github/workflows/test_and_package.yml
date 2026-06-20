@@ -1,0 +1,76 @@
+---
+name: Test and package distribution
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: test-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+
+  run-tests:
+    name: Test and package on ${{ matrix.python-version }}
+    runs-on: ubuntu-24.04
+    container:
+      image: docker.io/archlinux/archlinux:base-devel@sha256:8936df72701d320ff1d7d34e2a4e1df8dc9e137dea07126bf7a8135b2f971b35
+    strategy:
+      matrix:
+        python-version:
+          - 3.9
+          - "3.10"
+          - 3.11
+          - 3.12
+          - 3.13
+          - 3.14
+    permissions:
+      contents: write  # needed for github-pages-deploy-action
+    steps:
+      - name: Install system-level dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm git libgit2
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+        with:
+          persist-credentials: false
+      - name: Install just command runner
+        uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff  # v3.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b  # v7.3.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run tests
+        run: |
+          pwd
+          ls -al
+          echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+          just test
+        # - name: Build documentation
+        #   run: |
+        #     cd docs
+        #     make html
+        # - name: GitHub Pages deploy
+        #   uses: JamesIves/github-pages-deploy-action@9d877eea73427180ae43cf98e8914934fe157a1a  # v4.7.6
+        #   with:
+        #     branch: gh-pages
+        #     folder: docs/build/html
+        #   if: ${{ github.event_name == 'push' && matrix.python-version == '3.13' }}
+    # - name: Install pypa/build and pypa/twine
+    #   run: |
+    #     python -m pip install build twine
+    # - name: Build distribution packages (binary wheel and source tarball)
+    #   run: |
+    #     python -m build
+    # - name: Check packages with twine
+    #   run: |
+    #     python -m twine check ./dist/*
+    # - name: Store the distribution packages
+    #   uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6
+    #   with:
+    #     name: python-package-distributions-${{ matrix.python-version }}
+    #     path: ./dist

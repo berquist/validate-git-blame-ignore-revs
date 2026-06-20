@@ -21,9 +21,25 @@ jobs:
       security-events: write  # required for GitHub to present SARIF results
       contents: read  # required for workflows in private repositories
       actions: read  # required for reading workflow definition files
-  all:
+  all-prechecks:
     name: CI precheck success
     needs: [prechecks, separate-zizmor]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Success
+        run: "true"
+  unit-tests:
+    needs: [all-prechecks]
+    uses: ./.github/workflows/test_and_package.yml
+    permissions:
+      contents: write  # needed for github-pages-deploy-action
+  # publish:
+  #   needs: [unit-tests]
+  #   uses: ./.github/workflows/publish.yml
+  all:
+    name: CI success
+    # needs: [unit-tests, publish]
+    needs: [unit-tests]
     runs-on: ubuntu-24.04
     steps:
       - name: Success
