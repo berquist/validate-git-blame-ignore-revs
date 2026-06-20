@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
+import sys
 
 import pytest
 from dulwich import porcelain
-from validate_git_blame_ignore_revs.lib import validate_git_blame_ignore_revs
+from validate_git_blame_ignore_revs import validate_git_blame_ignore_revs
 
 if TYPE_CHECKING:
     from dulwich.repo import Repo
@@ -19,7 +20,10 @@ def repo_sst_core(tmp_path_factory: pytest.TempPathFactory) -> "Repo":
     return repo
 
 
-@pytest.mark.skip(reason="dulwich checkout has messed-up line endings")
+@pytest.mark.skipif(
+    sys.version_info.minor < 10,
+    reason="this has line ending problems when using older dulwich versions",
+)
 def test_validate_git_blame_ignore_revs_basic(repo_sst_core: "Repo") -> None:
     """The default settings only check for syntactic validity of the file."""
 
