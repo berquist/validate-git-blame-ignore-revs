@@ -1,6 +1,6 @@
 [project]
 name = "validate-git-blame-ignore-revs"
-dynamic = ["version"]
+version = "0.1.0"
 description = "Ensure a .git-blame-ignore-revs file is correct"
 readme = "README.md"
 authors = [
@@ -13,7 +13,7 @@ dependencies = []
 validate-git-blame-ignore-revs = "validate_git_blame_ignore_revs.__main__:main"
 
 [build-system]
-requires = ["setuptools>=61.0", "versioningit>=3.1"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [dependency-groups]
@@ -31,16 +31,3 @@ line-length = 100
 
 [tool.setuptools]
 zip-safe = false
-
-[tool.versioningit.format]
-method = {module = "versioningit_override", value = "versioningit_format", module-dir = "tools"}
-
-[tool.versioningit.template-fields.version-tuple]
-pep440 = true
-
-[tool.versioningit.vcs]
-method = "git"
-match = ["v*"]
-
-[tool.versioningit.write]
-file = "src/validate_git_blame_ignore_revs/_version.py"

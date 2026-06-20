@@ -10,11 +10,6 @@ concurrency:
   group: test-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
   cancel-in-progress: true
 
-# For now always take the "reduced" form of the version, even for those
-# actions runs that do not push to a package index.
-env:
-  VERSIONINGIT_FOR_PACKAGE_INDEX: true
-
 permissions: {}
 
 jobs:
@@ -43,9 +38,6 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
         with:
           persist-credentials: false
-          # so versioningit can figure out the version
-          fetch-depth: 0
-          fetch-tags: true
       - name: Install just command runner
         uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff  # v3.0.0
       - name: Install uv

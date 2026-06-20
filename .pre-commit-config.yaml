@@ -34,7 +34,6 @@ repos:
   #         - dulwich
   #         - pytest
   #         - types-pygit2
-  #         - versioningit
   - repo: https://github.com/google/yamlfmt
     rev: v0.21.0
     hooks:
