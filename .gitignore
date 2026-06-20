@@ -9,3 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .coverage
+
+
+# Added by cargo
+
+/target
