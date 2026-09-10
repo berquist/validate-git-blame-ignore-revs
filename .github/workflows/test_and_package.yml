@@ -18,7 +18,7 @@ jobs:
     name: Test and package on ${{ matrix.python-version }}
     runs-on: ubuntu-24.04
     container:
-      image: docker.io/archlinux/archlinux:base-devel@sha256:f270e47b2bc5b693fb5743b754fb3b8aa0dd932cdc7ab0b6f80d6e9489e09022
+      image: docker.io/archlinux/archlinux:base-devel@sha256:54ae539fe86b1d3df914f98f7f2bdfd4357cace7c6a82302db1d392e6114b6da
     strategy:
       matrix:
         python-version:
