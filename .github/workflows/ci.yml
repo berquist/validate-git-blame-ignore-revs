@@ -24,7 +24,7 @@ jobs:
   all-prechecks:
     name: CI precheck success
     needs: [prechecks, separate-zizmor]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Success
         run: "true"
@@ -40,7 +40,7 @@ jobs:
     name: CI success
     # needs: [unit-tests, publish]
     needs: [unit-tests]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Success
         run: "true"
